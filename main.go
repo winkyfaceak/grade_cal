@@ -11,20 +11,21 @@ import (
 
 func main() {
 	// Input grades, onlyCount, maxMark, and weight
-	var grades []int
-	var onlyCount, maxMark int
+	var grades []float64
+	var onlyCount int
+	var maxMark float64
 	var weight float64
 
 	fmt.Println("Enter your grades separated by spaces:")
-	fmt.Println("Like 10 10 1 etc")
+	fmt.Println("Like 10 10.5 1 etc")
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
 	gradeInput := scanner.Text()
 	gradesStr := strings.Fields(gradeInput)
 	for _, gradeStr := range gradesStr {
-		grade, err := strconv.Atoi(gradeStr)
+		grade, err := strconv.ParseFloat(gradeStr, 64)
 		if err != nil {
-			fmt.Println("Invalid input. Please enter integers separated by spaces.")
+			fmt.Println("Invalid input. Please enter numbers (integers or floats) separated by spaces.")
 			return
 		}
 		grades = append(grades, grade)
@@ -36,14 +37,21 @@ func main() {
 	fmt.Println("Enter the maximum mark for each grade:")
 	fmt.Scan(&maxMark)
 
-	fmt.Println("Enter the weight of this section of the module:")
-	fmt.Scan(&weight)
+	fmt.Println("Enter the weight of this section of the module (as a float, e.g., 0.2):")
+	scanner.Scan() // Reuse the scanner to capture weight as text
+	weightInput := scanner.Text()
+	parsedWeight, err := strconv.ParseFloat(strings.TrimSpace(weightInput), 64)
+	if err != nil {
+		fmt.Println("Invalid input for weight. Please enter a decimal number.")
+		return
+	}
+	weight = parsedWeight
 
 	// Sort the grades in descending order and select the top amount defined by onlyCount
 	sort.Slice(grades, func(i, j int) bool {
 		return grades[i] > grades[j]
 	})
-	var sortedGrades []int
+	var sortedGrades []float64
 	if len(grades) < onlyCount {
 		sortedGrades = grades
 	} else {
@@ -51,16 +59,16 @@ func main() {
 	}
 
 	// Calculate the total marks obtained
-	totalMarks := 0
+	totalMarks := 0.0
 	for _, grade := range sortedGrades {
 		totalMarks += grade
 	}
 
 	// Calculate the maximum possible marks
-	maxPossibleMarks := maxMark * onlyCount
+	maxPossibleMarks := maxMark * float64(onlyCount)
 
 	// Calculate the percentage achieved
-	percentageAchieved := (float64(totalMarks) / float64(maxPossibleMarks)) * 100
+	percentageAchieved := (totalMarks / maxPossibleMarks) * 100
 
 	// Calculate the weighted percentage achieved for this section
 	weightedPercentageAchieved := percentageAchieved * weight
